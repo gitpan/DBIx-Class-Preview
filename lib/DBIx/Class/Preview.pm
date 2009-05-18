@@ -7,11 +7,11 @@ use base qw/DBIx::Class/;
 
 =head1 VERSION
 
-Version 1.000000
+Version 1.000001
 
 =cut
 
-our $VERSION = '1.000000';
+our $VERSION = '1.000001';
 
 =head1 NAME
 
@@ -27,11 +27,11 @@ Add component to schema class.
 
   ...
 
-Add component to result class.
+Add component to each result class required to be previewed.
 
   package MyApp::Schema::Artist;
 
-__PACKAGE__->load_components('Preview');
+  __PACKAGE__->load_components('Preview');
 
   ...
 
@@ -41,27 +41,22 @@ And then elsewhere..
   $schema->preview_active(1);
 
   # update a row of a previewed class
+  # writes to the artist_preview table instead of the usual artist table
   my $row = $schema->resultset('Artist')->create({ name => 'luke' });
 
   # publish changes to live tables
+  # writes changes from artist_preview to the main artist table
   $schema->publish();
 
 =head1 DESCRIPTION
 
-When preview mode is active, all reads and writes to the previewed sources are redirected to a preview table.
-When L</publish> is called, these changes are synced to the live table from the previewed table.
+When preview mode is active, all reads and writes to the previewed sources are redirected to a preview table. When L</publish> is called, these changes are synced to the live table from the previewed table. You will need to set these additional preview tables up yourself - see L</SETUP>.
 
-You will need to set these additional preview tables up yourself - see L</SETUP>.
-
-A typical use of this would be for preview mode to be active for moderators for a website but not for normal users.
-The moderators would make changes as they see fit then when happy with them they can 'publish' those changes.
+For example, a moderator making changes to a website could use a schema with preview mode active while normal users got a schema without preview mode. This would enable the moderator to see the changes he's making as he makes them but normal users would not see his changes until they were published.
 
 =head1 SETUP
 
-For each table to be previewed, a separate table needs to be set up which has the same columns as the original
-table and also two extra columns - 'dirty' and 'deleted'. Also, these extra tables need to be populated
-with the rows from the original table before they can be used. For example, to setup a preview table for an 
-'artist' table in MySQL, you might use the following SQL:
+For each table to be previewed, a separate table needs to be set up which has the same columns as the original table and also two extra columns - 'dirty' and 'deleted'. These extra tables need to be populated with the rows from the original table before they can be used. For example, to setup a preview table for an 'artist' table in MySQL, you might use the following SQL:
 
   CREATE TABLE artist_preview LIKE artist;
   ALTER TABLE artist_preview ADD COLUMN dirty TINYINT NOT NULL DEFAULT 0;
@@ -93,15 +88,11 @@ all rows from the original table with the columns from the rows marked as dirty 
 
 =head2 ISSUES
 
-- Updating a row in the original source will not cause the change to be made to the previewed source as well.
-  Patches welcome to handle this behaviour, though beware of clashes with unpublished changes to the previewed rows.
+- Updating a row in the original source will not cause the change to be made to the previewed source as well. This means for previewed sources, al writes should be done while in preview mode to avoid changes being stomped when published. Patches welcome to better handle this behaviour.
 
-- Using the resultset methods 'update' and 'delete' will go uncaught by this module - what will happen is that 
-  the previewed rows will be updated but will not be marked as dirty or deleted. You should use update_all or delete_all
-  instead or alternatively send a patch
+- Using the resultset methods 'update' and 'delete' will go uncaught by this module - what will happen is that the previewed rows will be updated but will not be marked as dirty or deleted. You should use update_all or delete_all instead or alternatively send a patch
 
-- You have to create the previewed tables. Some people might find it preferable for the module to provide a method to
-  do it for you. But it doesn't yet.
+- You have to create the previewed tables. Some people might find it preferable for the module to provide a method to do it for you. But it doesn't yet.
 
 =head2 BUGS / CONTRIBUTING
 
