@@ -14,7 +14,7 @@ sub schema {
 
     my $new_source = DBIx::Class::ResultSource::Table::Preview->new({
 			%$self,
-			name           => 'top_100_batch_preview',
+			name           => $self->name . "_preview",
 			_relationships => Storable::dclone( $self->_relationships ),
 		});
     $new_source->add_column('dirty' => { data_type => 'integer', default_value => 0 });
