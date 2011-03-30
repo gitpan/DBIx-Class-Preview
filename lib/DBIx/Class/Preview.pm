@@ -7,11 +7,11 @@ use base qw/DBIx::Class/;
 
 =head1 VERSION
 
-Version 1.000002
+Version 1.000003
 
 =cut
 
-our $VERSION = '1.000002';
+our $VERSION = '1.000003';
 
 =head1 NAME
 

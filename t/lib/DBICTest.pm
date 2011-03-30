@@ -64,6 +64,10 @@ sub init_schema {
       $schema = DBICTest::Schema->compose_connection(
                   'DBICTest', @connect_info
                 );
+    } elsif ($args{connect}) {
+      $schema = DBICTest::Schema->connect(
+                  @connect_info
+                );      
     } else {
       $schema = DBICTest::Schema->compose_namespace('DBICTest')
                                 ->connect(@connect_info);
